@@ -5,7 +5,8 @@ import java.util.logging.Logger;
 public class Card {
     final Logger LOGGER = Logger.getLogger("Logger");
 
-    public static int[] primes = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41 };
+    
+
 
     protected int data;
     protected String str_data;
@@ -41,7 +42,7 @@ public class Card {
         temp += r;
         temp <<= 8;
 
-        temp += primes[r];
+        temp += Utils.primes[r];
         // System.out.println(Utils.padLeftZeros(Integer.toBinaryString(temp), 32));
         this.data = temp;
         this.str_data = str;
