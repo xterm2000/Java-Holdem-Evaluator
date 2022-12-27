@@ -20,19 +20,12 @@ public class PokerEvaluator {
             System.out.println("flush");
         }
 
-        int q = (c1 | c2 | c3 | c4 | c5) >> 16;
-        if (q < 0) {
-            // System.out.println(q);
-            System.out.println(String.format("%d %d %d %d %d", c1, c2, c3, c4, c5));
-            System.out.println(Utils.padLeftZeros(Integer.toBinaryString(c1), 32));
-            System.out.println(Utils.padLeftZeros(Integer.toBinaryString(c2), 32));
-            System.out.println(Utils.padLeftZeros(Integer.toBinaryString(c3), 32));
-            System.out.println(Utils.padLeftZeros(Integer.toBinaryString(c4), 32));
-            System.out.println(Utils.padLeftZeros(Integer.toBinaryString(c5), 32));
-            System.out.println(hand[0].str_data + " | " + hand[1].str_data + " | " + hand[2].str_data + " | "
-                    + hand[3].str_data + " | " + hand[4].str_data);
-        }
-        System.out.println(Utils.padLeftZeros(Integer.toBinaryString(q), 16));
+        int unique_5 = (c1 | c2 | c3 | c4 | c5) >> 16;
+
+        
+
+        System.out.println(unique_5);
+        
 
         return 0;
 

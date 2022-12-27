@@ -7,7 +7,7 @@ public class Deck {
     public static final int DECK_SIZE = 52;
     public static final int HAND_SIZE = 5;
     public static final String ranks = "23456789TJQKA";
-    public static final String suits = "cdhs";
+    public static final String suits = "CDHS";
 
     /** deck as Cards */
     public ArrayList<Card> deck_data = new ArrayList<Card>();
@@ -33,21 +33,7 @@ public class Deck {
             }
         }
 
-        int suit = 0x8000;
-        int idx = 0;
-        // init the deck
-        for (int i = 0; i < 4; ++i, suit >>= 1) {
-            for (int j = 0; j < 13; ++j, ++idx) {
-                cards[idx] = Utils.primes[j] | (j << 8) | suit | (1 << (16 + j));
-
-            }
-        }
-
-        for (int i = 0; i < cards.length; ++i) {
-            System.out.println("" + i + "   " + Utils.padLeftZeros(Integer.toBinaryString(cards[i]), 32));
-        }
     }
-    
 
     public void shuffle() {
         if (deck_data.size() < 52) {
@@ -55,7 +41,6 @@ public class Deck {
             return;
         }
         Collections.shuffle(deck_data);
-
     }
 
     /**
