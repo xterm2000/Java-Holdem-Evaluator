@@ -1,3 +1,4 @@
+package com.mitek.poker.evaluator;
 import java.util.ArrayList;
 import java.util.Collections;
 

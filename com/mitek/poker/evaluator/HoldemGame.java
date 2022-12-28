@@ -1,11 +1,21 @@
+package com.mitek.poker.evaluator;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.logging.Level;
 
+@SuppressWarnings("unused")
 public class HoldemGame {
+
+    private String hand_names[] = {
+            "STRAIGHT_FLUSH",
+            "FOUR_OF_A_KIND",
+            "FULL_HOUSE",
+            "FLUSH     ",
+            "STRAIGHT",
+            "THREE_OF_A_KIND",
+            "TWO_PAIR",
+            "ONE_PAIR",
+            "HIGH_CARD"
+    };
 
     // lookup to choose 5 from 7
     private int comb7[][] = {
@@ -66,22 +76,40 @@ public class HoldemGame {
 
     public void playRound(int num_of_rounds) {
 
+        int batch = num_of_rounds / 10;
+
         for (int i = 0; i < num_of_rounds; ++i) {
 
-          //  System.out.println("ROUND #" + i + 1);
+            // System.out.println("ROUND #" + i + 1);
             deck.reset();
             deck.shuffle();
             deal();
             flop();
             turn();
             river();
-           // printBoard();
             evaluateCards();
-          //  printEvals();
+            // printBoard();
+            // printEvals();
+
+            if (i % batch == 0) {
+                System.out.println((10 * i / batch) + "%");
+            }
         }
-        for (int i = 0;i<9;++i){
-            System.out.println(i + "\t" + hand_count[i]);
+        System.out.println("100%\n\n");
+
+        int sum = 0;
+        for (int i = 0; i < 9; ++i)
+            sum += hand_count[i];
+        System.out.println("Total hands: " + sum);
+        for (int i = 0; i < 9; ++i) {
+            String msg = String.format("%s\t\t%d\t%.3f %%",
+                    hand_names[i],
+                    hand_count[i],
+                    (double) hand_count[i] / (double) sum * 100);
+                    System.out.println(msg);
+
         }
+
     }
 
     private void printBoard() {
@@ -133,7 +161,6 @@ public class HoldemGame {
 
     public void evaluateCards() {
 
-        
         Card cards[] = new Card[7];
         for (int i = 0; i < players.length; ++i) {
             int min_rank = 9999;
@@ -157,7 +184,7 @@ public class HoldemGame {
                 }
                 // rank each hand
                 rank = p.eval5(sub_hand);
-               
+
                 // update rank if found less - higher poker hand)
                 if (rank < min_rank) {
                     String hand = new String();
@@ -176,11 +203,8 @@ public class HoldemGame {
             // after calculating subhands, we add the best hand to the list
             hand_count[hand_category(rank)]++;
             evals.add(msg);
-           
 
         } // end player loop
-
-     
 
     }
 

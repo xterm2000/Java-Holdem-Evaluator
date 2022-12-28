@@ -1,12 +1,31 @@
+package com.mitek.poker.evaluator;
+
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.crypto.spec.GCMParameterSpec;
 
 @SuppressWarnings("unused")
 class MainApp {
         public static Logger LOGGER = Logger.getLogger("poker.logger");
+        private static final long MEGABYTE = 1024L * 1024L;
+
+        public static long bytesToMegabytes(long bytes) {
+                return bytes / MEGABYTE;
+        }
+
+        public static void checkMem() {
+
+                // Get the Java runtime
+                Runtime runtime = Runtime.getRuntime();
+                // Run the garbage collector
+                runtime.gc();
+                // Calculate the used memory
+                long memory = runtime.totalMemory() - runtime.freeMemory();
+                System.out.println("Used memory is bytes: " + memory);
+                System.out.println("Used memory is megabytes: "
+                                + bytesToMegabytes(memory));
+        }
 
         public static void main(String args[]) {
                 LOGGER.setLevel(Level.ALL);
@@ -44,15 +63,17 @@ class MainApp {
                 // System.out.println("hand:\t" + p.hand_rank(h1) + "\nrank: " + h1);
                 // #endregion
 
-                HoldemGame g = new HoldemGame(9);
-
+                checkMem();
+                HoldemGame g = new HoldemGame(6);
+                checkMem();
                 long start = System.currentTimeMillis();
 
-                g.playRound(300000);
+                g.playRound(1000000);
+                checkMem();
 
                 long timeElapsed = System.currentTimeMillis() - start;
 
-                System.out.println(String.format("Time elapsed (%f)s.", timeElapsed/1000));
+                System.out.println(String.format("Time elapsed (%.2f) seconds.", ((float) timeElapsed / 1000)));
 
                 LOGGER.log(Level.INFO, "Exiting.");
 
