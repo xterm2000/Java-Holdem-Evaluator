@@ -4,20 +4,30 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 
 public class Card {
-    final Logger LOGGER = Logger.getLogger("poker.logger");
+
     protected int data;
 
-   
+    /**
+     * construct card from string
+     * 
+     * @param str - string in form of rank suit ( Ah / AH )
+     */
     public Card(String str) {
+        if (str.length() != 2) {
+            MainApp.LOGGER.log(Level.SEVERE, "Invalid format: " + str);
+            this.data = 0;
+            return;
+        }
         str = str.toUpperCase();
         int r = Deck.ranks.indexOf(str.charAt(0));
         int s = Deck.suits.indexOf(str.charAt(1));
         if (r < 0 || s < 0) {
-            LOGGER.log(Level.SEVERE, "Card not exists: " + str);
+            MainApp.LOGGER.log(Level.SEVERE, "Card not exists: " + str);
+            this.data = 0;
             return;
         }
-        this.data = 0 | 1 << (16 + r) | ((0x8000) >> s) | (r << 8) | Utils.primes[r];
-
+        this.data = 0 | 1 << (16 + r) | ((0x8000) >> s) | (r << 8) | PokerEvaluator.primes[r];
+     //   System.out.println( this.toString() );
     }
 
     public Card(int c) {
@@ -27,7 +37,7 @@ public class Card {
     public Card(Card other) {
         this.data = other.data;
     }
-   
+
     @Override
     public String toString() {
         char rank = Deck.ranks.charAt((this.data & 0xF00) >> 8);
@@ -48,7 +58,7 @@ public class Card {
                 suit = 'C';
                 break;
             default:
-                System.out.println("*");
+                MainApp.LOGGER.log(Level.SEVERE, "invalid suit");
                 break;
         }
         return "" + rank + "" + suit;

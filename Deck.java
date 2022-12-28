@@ -12,9 +12,6 @@ public class Deck {
     /** deck as Cards */
     public ArrayList<Card> deck_data = new ArrayList<Card>();
 
-    /** deck as integers */
-    public int[] cards = new int[Deck.DECK_SIZE];
-
     @Override
     public String toString() {
         String retVal = "";
@@ -26,20 +23,21 @@ public class Deck {
     }
 
     public Deck() {
+        init();
+    }
 
+    /** (re)construct the deck */
+    private void init() {
+        deck_data.clear();
         for (int i = 0; i < ranks.length(); ++i) {
             for (int j = 0; j < suits.length(); ++j) {
                 deck_data.add(new Card("" + ranks.charAt(i) + suits.charAt(j)));
             }
         }
-
     }
 
+    /** shuffle using Collections.shuffle() */
     public void shuffle() {
-        if (deck_data.size() < 52) {
-            System.err.println("cannot shuffle incomplete deck.");
-            return;
-        }
         Collections.shuffle(deck_data);
     }
 
@@ -62,6 +60,11 @@ public class Deck {
     public Card peekCard() {
         Card c = deck_data.get(0);
         return c;
+    }
+
+    public void reset() {
+        init();
+
     }
 
 }

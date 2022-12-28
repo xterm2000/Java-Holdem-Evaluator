@@ -1,9 +1,9 @@
 # Card encoding scheme
 xxxnnnnn | nnnnnnnn | cdhsrrrr | xxpppppp
-n - bit of the rank
+n - bit of the rank akqjt98765432
 cdhs - bit of the suit
 rrrr - rank of the card 
-pp. - prime rank of the card
+pppppp - prime rank of the card
 
 # Hand Ranks
 01 - Royal Flush     ( AKQJTs )
@@ -18,3 +18,24 @@ pp. - prime rank of the card
 10 - High card       ( KJT82  )
 
 # Misc calc
+
+Straights:
+xxx1 1111 0000 0000
+xxx0 1111 1000 0000
+...
+xxx0 0000 0001 1111
+
+xxx1 0000 0000 1111
+
+4111 - Five High SF (Bicycle)
+31   - Six high SF
+62   - Seven high SF 
+124  - Eight high SF
+248  - Nine high SF
+496  - Ten high SF
+992  - Jack high SF
+1984 - Queen high SF
+3968 - King high SF
+7936 - Royal flush
+
+    

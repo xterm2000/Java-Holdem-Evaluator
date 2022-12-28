@@ -1,5 +1,10 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class Utils {
-    public static int[] primes = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41 };
+
     /**
      * 
      * @param inputString - string to pad
@@ -16,6 +21,18 @@ public class Utils {
         }
         sb.append(inputString);
         return sb.toString();
+    }
+
+    public static void writeToFile(String fileName, ArrayList<String> data) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false));
+        writer.flush();
+
+        for (String s : data) {
+            writer.write(s);
+            writer.newLine();
+        }
+
+        writer.close();
     }
 
 }
