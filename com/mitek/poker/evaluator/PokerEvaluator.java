@@ -1,4 +1,5 @@
 package com.mitek.poker.evaluator;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,6 +115,9 @@ public class PokerEvaluator {
 
         String msg = String.format("Finished init in %d(ms)", timeElapsed);
         LOGGER.log(Level.INFO, msg);
+
+        System.out.println(String.format("Lookup takes %d KB", Utils.getMemKBytes(lookup)));
+
     }
 
     private void initFlushes() {

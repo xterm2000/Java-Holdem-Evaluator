@@ -1,4 +1,8 @@
 package com.mitek.poker.evaluator;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -18,7 +22,7 @@ public class HoldemGame {
     };
 
     // lookup to choose 5 from 7
-    private int comb7[][] = {
+    private int comb5of7[][] = {
             { 0, 1, 2, 3, 4 },
             { 0, 1, 2, 3, 5 },
             { 0, 1, 2, 3, 6 },
@@ -50,8 +54,14 @@ public class HoldemGame {
 
     ArrayList<String> evals = new ArrayList<>();
 
-    protected class Player {
+    private class Hand {
+
+    }
+
+    private class Player {
+
         private Card hole_cards[] = new Card[2];
+        private boolean hold_Cards = false;
 
         public void setCards(Card c1, Card c2) {
             hole_cards[0] = c1;
@@ -78,6 +88,8 @@ public class HoldemGame {
 
         int batch = num_of_rounds / 10;
 
+        long start = System.currentTimeMillis();
+
         for (int i = 0; i < num_of_rounds; ++i) {
 
             // System.out.println("ROUND #" + i + 1);
@@ -92,7 +104,11 @@ public class HoldemGame {
             // printEvals();
 
             if (i % batch == 0) {
+
                 System.out.println((10 * i / batch) + "%");
+                if (i / batch == 1) {
+
+                }
             }
         }
         System.out.println("100%\n\n");
@@ -106,9 +122,11 @@ public class HoldemGame {
                     hand_names[i],
                     hand_count[i],
                     (double) hand_count[i] / (double) sum * 100);
-                    System.out.println(msg);
+            System.out.println(msg);
 
         }
+
+        System.out.println(String.format("Evals takes %d KB", Utils.getMemKBytes(evals)));
 
     }
 
@@ -162,7 +180,9 @@ public class HoldemGame {
     public void evaluateCards() {
 
         Card cards[] = new Card[7];
+
         for (int i = 0; i < players.length; ++i) {
+
             int min_rank = 9999;
             int rank = 0;
             String msg = new String();
@@ -172,15 +192,16 @@ public class HoldemGame {
             cards[2] = board[2];
             cards[3] = board[3];
             cards[4] = board[4];
+
             cards[5] = players[i].hole_cards[0];
             cards[6] = players[i].hole_cards[1];
 
             Card sub_hand[] = new Card[5];
 
             // go over 5 card hands
-            for (int j = 0; j < comb7.length; ++j) {
+            for (int j = 0; j < comb5of7.length; ++j) {
                 for (int k = 0; k < 5; ++k) {
-                    sub_hand[k] = cards[comb7[j][k]];
+                    sub_hand[k] = cards[comb5of7[j][k]];
                 }
                 // rank each hand
                 rank = p.eval5(sub_hand);
@@ -201,8 +222,9 @@ public class HoldemGame {
             } // end subhand loops
 
             // after calculating subhands, we add the best hand to the list
-            hand_count[hand_category(rank)]++;
             evals.add(msg);
+
+            hand_count[hand_category(rank)]++;
 
         } // end player loop
 
@@ -238,4 +260,5 @@ public class HoldemGame {
             return 0; // 10 straight-flushes
         return -1;
     }
+
 }

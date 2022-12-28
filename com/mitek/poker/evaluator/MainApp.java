@@ -8,27 +8,16 @@ import javax.crypto.spec.GCMParameterSpec;
 @SuppressWarnings("unused")
 class MainApp {
         public static Logger LOGGER = Logger.getLogger("poker.logger");
-        private static final long MEGABYTE = 1024L * 1024L;
+       
 
-        public static long bytesToMegabytes(long bytes) {
-                return bytes / MEGABYTE;
-        }
+        
 
-        public static void checkMem() {
-
-                // Get the Java runtime
-                Runtime runtime = Runtime.getRuntime();
-                // Run the garbage collector
-                runtime.gc();
-                // Calculate the used memory
-                long memory = runtime.totalMemory() - runtime.freeMemory();
-                System.out.println("Used memory is bytes: " + memory);
-                System.out.println("Used memory is megabytes: "
-                                + bytesToMegabytes(memory));
-        }
+       
 
         public static void main(String args[]) {
-                LOGGER.setLevel(Level.ALL);
+
+                System.out.println("\n\n\n\n#####################\n\n");
+                LOGGER.setLevel(Level.OFF);
                 // #region
                 // Deck d = new Deck();
                 // d.shuffle();
@@ -63,13 +52,13 @@ class MainApp {
                 // System.out.println("hand:\t" + p.hand_rank(h1) + "\nrank: " + h1);
                 // #endregion
 
-                checkMem();
+                Utils.checkMem();
                 HoldemGame g = new HoldemGame(6);
-                checkMem();
+                Utils.checkMem();
                 long start = System.currentTimeMillis();
 
                 g.playRound(1000000);
-                checkMem();
+                Utils.checkMem();
 
                 long timeElapsed = System.currentTimeMillis() - start;
 
