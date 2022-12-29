@@ -15,15 +15,19 @@ class MainApp {
         public static Logger LOGGER = Logger.getLogger("poker.logger");
 
         public static void main(String args[]) {
-                
+                String ch = "c";
+
                 System.out.println("\n\n#####################\n");
                 LOGGER.setLevel(Level.OFF);
                 HoldemGame g;
-                g = new HoldemGame(9);
+                g = new HoldemGame(2);
+
                 Utils.Timer.startTimer();
-                g.play(1000000);
+                g.play(10000);
                 Utils.Timer.printSecondsFromStart();
+
                 LOGGER.log(Level.INFO, "Exiting.");
+                
 
         }
 }

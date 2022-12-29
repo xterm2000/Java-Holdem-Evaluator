@@ -88,11 +88,7 @@ public class HoldemGame {
 
             playRound();
             if (i % batch == 0) {
-                log(Integer.toString(10 * i / batch) + "%");
-
-                if (i / batch == 1) {
-                    log("first batch.");
-                }
+                log("Progress:" + Integer.toString(10 * i / batch) + "%");                
             }
         }
         log("100%\n\n");
@@ -121,8 +117,8 @@ public class HoldemGame {
 
     private void init() {
         deck.reset();
-        dealPlayer(HERO_POSITION, "7d", "7s");
-        dealPlayer(1, "As", "Kh");
+        dealPlayer(HERO_POSITION, "As", "Ks");
+        dealPlayer(1, "Th", "Tc");
         deck.shuffle();
     }
 
@@ -252,14 +248,15 @@ public class HoldemGame {
             Hand h = winner_hand_hist.get(i);
 
             win_counts[h.player_number]++;
+            if (b) {
+                String msg = String.format("Player: %d\trank:%d\t%s\tcards:[ %s ]",
+                        h.player_number,
+                        h.rank,
+                        PokerEvaluator.hand_rank(h.rank),
+                        h.handStr);
 
-            String msg = String.format("Player: %d\trank:%d\t%s\tcards:[ %s ]",
-                    h.player_number,
-                    h.rank,
-                    PokerEvaluator.hand_rank(h.rank),
-                    h.handStr);
-            if (b)
                 log(msg);
+            }
         }
 
         int total = winner_hand_hist.size();
