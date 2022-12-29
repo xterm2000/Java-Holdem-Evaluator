@@ -1,25 +1,16 @@
-<<<<<<< HEAD
+
 # Poker Evaluator ver 1.0
 
-# explanations 
-# Card encoding scheme
-xxxnnnnn | nnnnnnnn | cdhsrrrr | xxpppppp
-n - bit of the rank akqjt98765432
-cdhs - bit of the suit
-rrrr - rank of the card 
-pppppp - prime rank of the card
-=======
-# poker evaluator v1.0
->>>>>>> 4fe0388c43fcdf967e38e3254f5206a7be3caad3
+## explanations 
 
-## Card encoding scheme
+### Card encoding scheme
 * xxxnnnnn | nnnnnnnn | cdhsrrrr | xxpppppp </br>
 * n - bit of the rank AKQJT98765432 </br>
 * cdhs - bit of the suit </br>
 * rrrr - rank of the card  </br>
 * pppppp - prime rank of the card </br>
 
-## Hand Ranks
+### Hand Ranks
 * 01 - Royal Flush     ( AKQJTs ) </br>
 * 02 - Straight Flush  ( JT987s ) </br>
 * 03 - Four of a kind  ( KKKK2  ) </br>
@@ -32,7 +23,7 @@ pppppp - prime rank of the card
 * 10 - High card       ( KJT82  ) </br>
 
 ## Misc calc
-<p>
+
 Straights: 
 xxx1 1111 0000 0000 
 xxx0 1111 1000 0000
@@ -50,6 +41,3 @@ xxx1 0000 0000 1111
 1984 - Queen high SF
 3968 - King high SF
 7936 - Royal flush
-
-    
-</p>
