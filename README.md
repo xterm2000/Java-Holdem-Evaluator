@@ -1,3 +1,6 @@
+# Poker Evaluator ver 1.0
+
+# explanations 
 # Card encoding scheme
 xxxnnnnn | nnnnnnnn | cdhsrrrr | xxpppppp
 n - bit of the rank akqjt98765432
