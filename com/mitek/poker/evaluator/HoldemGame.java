@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
@@ -45,161 +47,146 @@ public class HoldemGame {
             { 1, 3, 4, 5, 6 },
             { 2, 3, 4, 5, 6 } };
 
+    /**
+     * array to count hands
+     */
+    private int hand_count[] = new int[10];
+
+    /** holds hand evaluation */
+    private ArrayList<String> evals = new ArrayList<>();
+
+    /** track of the winning hands */
+    private ArrayList<Hand> winner_hand_hist = new ArrayList<>();
+
+    /** PLayer with the held cards */
+    private final int HERO_POSITION = 0;
+
+    /* data structures */
     private Deck deck = new Deck();
     private Player[] players = null;
     private Card[] board = new Card[5];
-    PokerEvaluator p = new PokerEvaluator("chuck chuck");
+    private PokerEvaluator p = new PokerEvaluator("Game Evaluator v1.1.");
 
-    int hand_count[] = new int[10];
-
-    ArrayList<String> evals = new ArrayList<>();
-
-    private class Hand {
-
+    private static void log(String msg) {
+        System.out.println(msg);
     }
-
-    private class Player {
-
-        private Card hole_cards[] = new Card[2];
-        private boolean hold_Cards = false;
-
-        public void setCards(Card c1, Card c2) {
-            hole_cards[0] = c1;
-            hole_cards[1] = c2;
-        }
-
-        public Card[] getCards() {
-            Card[] retVal = new Card[2];
-            retVal[0] = hole_cards[0];
-            retVal[1] = hole_cards[1];
-            return retVal;
-        }
-
-    };
 
     public HoldemGame(int num_players) {
         MainApp.LOGGER.log(Level.INFO, "Game init.");
+
+        // init players
         players = new Player[num_players];
         for (int i = 0; i < num_players; ++i)
             players[i] = new Player();
     }
 
-    public void playRound(int num_of_rounds) {
+    public void play(int num_of_rounds) {
 
-        int batch = num_of_rounds / 10;
-
-        long start = System.currentTimeMillis();
+        int batch = Math.max((num_of_rounds / 10), 1);
 
         for (int i = 0; i < num_of_rounds; ++i) {
 
-            // System.out.println("ROUND #" + i + 1);
-            deck.reset();
-            deck.shuffle();
-            deal();
-            flop();
-            turn();
-            river();
-            evaluateCards();
-            // printBoard();
-            // printEvals();
-
+            playRound();
             if (i % batch == 0) {
+                log(Integer.toString(10 * i / batch) + "%");
 
-                System.out.println((10 * i / batch) + "%");
                 if (i / batch == 1) {
-
+                    log("first batch.");
                 }
             }
         }
-        System.out.println("100%\n\n");
-
-        int sum = 0;
-        for (int i = 0; i < 9; ++i)
-            sum += hand_count[i];
-        System.out.println("Total hands: " + sum);
-        for (int i = 0; i < 9; ++i) {
-            String msg = String.format("%s\t\t%d\t%.3f %%",
-                    hand_names[i],
-                    hand_count[i],
-                    (double) hand_count[i] / (double) sum * 100);
-            System.out.println(msg);
-
-        }
-
-        System.out.println(String.format("Evals takes %d KB", Utils.getMemKBytes(evals)));
+        log("100%\n\n");
+        printHandsTotals();
+        printHandHistory(false);
 
     }
 
-    private void printBoard() {
-        String msg = String.format(
-                "Flop:\t[ %s %s %s ]\t",
-                board[0],
-                board[1],
-                board[2]);
-        msg += String.format("Turn: [ %s ]\t", board[3]);
-        msg += String.format("River: [ %s ]", board[4]);
-        msg += String.format("\nBoard:\t[ %s %s %s %s %s] ",
-                board[0],
-                board[1],
-                board[2],
-                board[3],
-                board[4]);
-        System.out.println(msg);
+    public void playRound() {
+        init();
+        deal();
+        flop();
+        turn();
+        river();
+        evaluateRound();
+        // printBoard();
+        // printEvals();
+    }
+
+    private void dealPlayer(int pos, String c1, String c2) {
+
+        players[pos].hole_cards[0] = deck.getCard(c1);
+        players[pos].hole_cards[1] = deck.getCard(c2);
+        players[pos].hold_Cards = true;
+    }
+
+    private void init() {
+        deck.reset();
+        dealPlayer(HERO_POSITION, "7d", "7s");
+        dealPlayer(1, "As", "Kh");
+        deck.shuffle();
     }
 
     private void deal() {
         for (int i = 0; i < players.length; ++i) {
-            Card c1 = deck.getCard(), c2 = deck.getCard();
+
+            if (players[i].hold_Cards)
+                continue;
+
+            Card c1 = deck.getTopCard(), c2 = deck.getTopCard();
             players[i].setCards(c1, c2);
             String msg = String.format(
                     "Player #%d : [ %s %s ]",
                     i,
                     c1.toString(),
                     c2.toString());
-            // System.out.println(msg);
+            // Log(msg);
         }
     }
 
     private void flop() {
-        board[0] = deck.getCard();
-        board[1] = deck.getCard();
-        board[2] = deck.getCard();
+        board[0] = deck.getTopCard();
+        board[1] = deck.getTopCard();
+        board[2] = deck.getTopCard();
 
     }
 
     private void turn() {
-        board[3] = deck.getCard();
+        board[3] = deck.getTopCard();
 
     }
 
     private void river() {
-        board[4] = deck.getCard();
+        board[4] = deck.getTopCard();
 
     }
 
-    public void evaluateCards() {
+    public void evaluateRound() {
 
         Card cards[] = new Card[7];
+        SortedSet<Hand> hand_stack = new TreeSet<>();
+        hand_stack.clear();
+        int min_rank = 9999;
+        int rank = 0;
+        // board cards
+        cards[0] = board[0];
+        cards[1] = board[1];
+        cards[2] = board[2];
+        cards[3] = board[3];
+        cards[4] = board[4];
 
-        for (int i = 0; i < players.length; ++i) {
+        // loop over players to make the best hand
+        for (int pl_idx = 0; pl_idx < players.length; ++pl_idx) {
 
-            int min_rank = 9999;
-            int rank = 0;
-            String msg = new String();
-
-            cards[0] = board[0];
-            cards[1] = board[1];
-            cards[2] = board[2];
-            cards[3] = board[3];
-            cards[4] = board[4];
-
-            cards[5] = players[i].hole_cards[0];
-            cards[6] = players[i].hole_cards[1];
+            cards[5] = players[pl_idx].hole_cards[0];
+            cards[6] = players[pl_idx].hole_cards[1];
 
             Card sub_hand[] = new Card[5];
+            Hand h = null;
 
             // go over 5 card hands
             for (int j = 0; j < comb5of7.length; ++j) {
+
+                // take the j-th permutation
                 for (int k = 0; k < 5; ++k) {
                     sub_hand[k] = cards[comb5of7[j][k]];
                 }
@@ -208,38 +195,31 @@ public class HoldemGame {
 
                 // update rank if found less - higher poker hand)
                 if (rank < min_rank) {
-                    String hand = new String();
-                    for (Card c : sub_hand)
-                        hand += c + " ";
-                    msg = String.format("Hand: %s\t\trank: %d\tcards: %s",
-                            p.hand_rank(rank),
-                            rank,
-                            hand);
+                    h = new Hand(sub_hand, pl_idx, rank);
+                    hand_stack.add(h); // add srongest hand for each player
                     min_rank = rank;
-
                 }
 
             } // end subhand loops
 
-            // after calculating subhands, we add the best hand to the list
-            evals.add(msg);
-
-            hand_count[hand_category(rank)]++;
-
         } // end player loop
+
+        // winning hand of the round
+        winner_hand_hist.add(hand_stack.first());
+        // after calculating subhands, we add the best hand to the list
+        hand_count[getHandCategory(hand_stack.first().rank)]++;
 
     }
 
     public void printEvals() {
         for (int i = 0; i < players.length; ++i) {
-
-            System.out.println(String.format("Player #%d", i));
-            System.out.println(evals.get(i));
+            log(String.format("Player #%d", i));
+            log(evals.get(i));
 
         }
     }
 
-    private int hand_category(int rank) {
+    private int getHandCategory(int rank) {
         if (rank > 6185)
             return 8; // 1277 high card
         if (rank > 3325)
@@ -259,6 +239,72 @@ public class HoldemGame {
         if (rank >= 0)
             return 0; // 10 straight-flushes
         return -1;
+    }
+
+    public void printHandHistory(boolean b) {
+
+        int win_counts[] = new int[players.length];
+
+        log("\nWinning HAND_HISTORY:");
+
+        for (int i = 0; i < winner_hand_hist.size(); ++i) {
+
+            Hand h = winner_hand_hist.get(i);
+
+            win_counts[h.player_number]++;
+
+            String msg = String.format("Player: %d\trank:%d\t%s\tcards:[ %s ]",
+                    h.player_number,
+                    h.rank,
+                    PokerEvaluator.hand_rank(h.rank),
+                    h.handStr);
+            if (b)
+                log(msg);
+        }
+
+        int total = winner_hand_hist.size();
+
+        System.out.println("\n");
+        for (int i = 0; i < win_counts.length; ++i) {
+            String msg = String.format("Player #%d\t%d hands\t%.2f %%", i, win_counts[i],
+                    (double) win_counts[i] / (double) total * 100);
+            log(msg);
+        }
+
+    }
+
+    private void printBoard() {
+        String msg = String.format(
+                "Flop:\t[ %s %s %s ]\t",
+                board[0],
+                board[1],
+                board[2]);
+        msg += String.format("Turn: [ %s ]\t", board[3]);
+        msg += String.format("River: [ %s ]", board[4]);
+        msg += String.format("\nBoard:\t[ %s %s %s %s %s] ",
+                board[0],
+                board[1],
+                board[2],
+                board[3],
+                board[4]);
+        log(msg);
+    }
+
+    public void printHandsTotals() {
+        int sum = 0;
+        for (int i = 0; i < 9; ++i)
+            sum += hand_count[i];
+
+        log("Total hands: " + sum);
+
+        for (int i = 0; i < 9; ++i) {
+
+            String msg = String.format("%s\t\t%d\t\t%.3f %%",
+                    hand_names[i],
+                    hand_count[i],
+                    (double) hand_count[i] / (double) sum * 100);
+            log(msg);
+        }
     }
 
 }

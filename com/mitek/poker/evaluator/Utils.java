@@ -40,7 +40,7 @@ public class Utils {
         writer.close();
     }
 
-    public static long bytesToMegabytes(long bytes) {
+    private static long bytesToMegabytes(long bytes) {
         return bytes / MEGABYTE;
     }
 
@@ -59,20 +59,44 @@ public class Utils {
 
     public static int getMemKBytes(Object obj) {
         int retVal = 0;
-        try {
-            retVal = (int) (getBytesFromList(obj) / 1024);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        retVal = (int) (getBytesFromList(obj) / 1024L);
         return retVal;
     }
 
-    private static long getBytesFromList(Object obj) throws IOException {
+    private static long getBytesFromList(Object obj) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(baos);
-        out.writeObject(obj);
-        out.close();
+
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(baos);
+            out.writeObject(obj);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return baos.toByteArray().length;
     }
 
+    public static class Timer {
+        private static long start = 0L;
+        private static long stop = 0L;
+
+        public static void stopTimer() {
+            stop = System.currentTimeMillis();
+        }
+
+        public static void startTimer() {
+            start = System.currentTimeMillis();
+        }
+
+        public static void printSecondsFromStart() {
+            long elapsedTime = System.currentTimeMillis() - start;
+            System.out.println(String.format("%d seconds.", (elapsedTime / 1000)));
+        }
+
+        public static void printElapsedTime() {
+            System.out.println(String.format("%d seconds.", (stop - start)));
+        }
+
+    }
 }

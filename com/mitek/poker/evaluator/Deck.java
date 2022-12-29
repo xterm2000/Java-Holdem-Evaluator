@@ -1,4 +1,5 @@
 package com.mitek.poker.evaluator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -47,7 +48,7 @@ public class Deck {
      * 
      * @return top card in the deck
      */
-    public Card getCard() {
+    public Card getTopCard() {
         Card c = deck_data.get(0);
         deck_data.remove(0);
         return c;
@@ -58,14 +59,21 @@ public class Deck {
      * 
      * @return top card in the deck
      */
-    public Card peekCard() {
+    public Card peekTopCard() {
         Card c = deck_data.get(0);
         return c;
     }
 
     public void reset() {
         init();
+    }
 
+    public Card getCard(String cardStr) {
+        Card c = new Card(cardStr);
+        boolean b = deck_data.contains(c);
+        if (b)
+            deck_data.remove(c);
+        return c;
     }
 
 }

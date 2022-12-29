@@ -1,4 +1,5 @@
 package com.mitek.poker.evaluator;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +22,7 @@ public class Card {
         }
         str = str.toUpperCase();
         int r = Deck.ranks.indexOf(str.charAt(0));
+        
         int s = Deck.suits.indexOf(str.charAt(1));
         if (r < 0 || s < 0) {
             MainApp.LOGGER.log(Level.SEVERE, "Card not exists: " + str);
@@ -28,11 +30,17 @@ public class Card {
             return;
         }
         this.data = 0 | 1 << (16 + r) | ((0x8000) >> s) | (r << 8) | PokerEvaluator.primes[r];
-     //   System.out.println( this.toString() );
+        // System.out.println( this.toString() );
     }
 
     public Card(int c) {
         this.data = c;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Card c = (Card) obj;
+        return this.data == c.data;
     }
 
     public Card(Card other) {

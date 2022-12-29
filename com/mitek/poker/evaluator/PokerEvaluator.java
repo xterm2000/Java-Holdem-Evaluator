@@ -70,7 +70,7 @@ public class PokerEvaluator {
         return -1;
     }
 
-    public HandRank hand_rank(int val) {
+    public static HandRank hand_rank(int val) {
         if (val > 6185)
             return HandRank.HIGH_CARD; // 1277 high card
         if (val > 3325)
