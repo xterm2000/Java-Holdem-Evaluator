@@ -1,1 +1,10 @@
-.vscode
+.classpath
+.project
+.settings
+/target/
+.DS_Store
+.idea/
+*.iml
+/TGT/
+# /.vscode/
+ 
