@@ -17,6 +17,7 @@ public class Player {
     }
 
     public void setCards(String c1, String c2) {
+        
         this.setCards(new Card(c1), new Card(c2));
     }
 

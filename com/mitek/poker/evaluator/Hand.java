@@ -26,19 +26,31 @@ public class Hand implements Comparable<Hand> {
     public void setHoleCards(Card c1, Card c2) {
 
         this.hole_cards[0] = c1;
-        this.hole_cards[1] = c1;
+        this.hole_cards[1] = c2;
     }
 
     @Override
     public String toString() {
-        String ret = String.format("Player %d \thole cards: [%s,%s] \trank: %d \t Hand: %s \t Cards: %s",
+        String ret = String.format("Player %d \thole cards: [%s,%s] \trank: %d \t Hand: %s \t Cards: %s\t %s",
                 player_number,
                 hole_cards[0],
                 hole_cards[1],
                 rank,
                 PokerEvaluator.hand_rank(rank),
-                handStr);
+                handStr,
+                PokerEvaluator.evalPocketPair(hole_cards[0], hole_cards[1]));
+        if (this.player_number == 0)
+            ret += " *";
+        else if (this.player_number == 1)
+            ret += " #";
         return ret;
+    }
+
+    /**
+     * @return - Class of the hand - [0-10]
+     */
+    public int getHandClass() {
+        return PokerEvaluator.hand_rank(this.rank).ordinal();
     }
 
     @Override

@@ -50,6 +50,11 @@ public class Game2 {
     private static final boolean LOG = false;
     private static final int HAND_SIZE = 5;
 
+    int game_count = 0;
+
+    /** saves hands of all players in a round */
+    ArrayList<Hand> round_hands = new ArrayList<>();
+
     /** array to count hands */
     private int hand_count[] = new int[10];
 
@@ -89,23 +94,30 @@ public class Game2 {
         init();
     }
 
-    /* deal the cards to nonamed players */
+    /**
+     * deal the cards to nonamed players
+     */
     private void dealCards() {
 
         for (int i = 0; i < players.size(); ++i) {
-
-            if (players.get(i).hold_Cards)
-                continue;
-
-            Card c1 = deck.getTopCard(), c2 = deck.getTopCard();
+            Card c1, c2;
+            if (players.get(i).hold_Cards) {
+                c1 = deck.getCard(players.get(i).hole_cards[0].toString());
+                c2 = deck.getCard(players.get(i).hole_cards[1].toString());
+            } else {
+                c1 = deck.getTopCard();
+                c2 = deck.getTopCard();
+            }
             players.get(i).setCards(c1, c2);
         }
     }
 
     /** inits the game */
     public void init() {
+        p.p2g = this;
         deck.reset();
         gameState = GameState.START;
+        game_count++;
     }
 
     /**
@@ -118,33 +130,46 @@ public class Game2 {
      */
     public void addPlayer(String n, String c1, String c2, int p_stack) {
         Player p = new Player(n);
-        p.setCards(deck.getCard(c1), deck.getCard(c2));
+        if (c1 == null || c2 == null) {
+            p.setCards(deck.getTopCard(), deck.getTopCard());
+        } else
+            p.setCards(deck.getCard(c1), deck.getCard(c2));
+
         p.stack = p_stack;
         players.add(p);
         LOGGER.info("Player " + p.name + " added.");
     }
 
-    /** evaluates the current state of the table */
-    public void evaluateCurrentState() {
-        LOGGER.info("Evaluating.");
+    /**
+     * evaluates the current state of the table
+     * 
+     * @return - the list of hands sorted by rank
+     */
+    public ArrayList<Hand> evaluateCurrentState() {
         ArrayList<Hand> hands = new ArrayList<>();
 
         // nothing to evaluate pre flop
         if (gameState < GameState.FLOP)
-            return;
+            return null;
 
         // loop over players
         for (int i = 0; i < players.size(); ++i) {
             Hand h = evalPlayer(i);
+            h.setHoleCards(
+                    players.get(i).hole_cards[0],
+                    players.get(i).hole_cards[1]);
             hands.add(h);
         }
-        
+
         Collections.sort(hands);
-        for (Hand h : hands)
-            System.out.println(h);
+        return (hands);
     }
 
-    /** assummes (round > 0) */
+    /**
+     * evaluates given player
+     * 
+     * @param pl - player number
+     */
     private Hand evalPlayer(int pl) {
 
         assert (gameState > 0);
@@ -155,7 +180,7 @@ public class Game2 {
         all_cards.add(players.get(pl).hole_cards[1]);
         all_cards.addAll(board);
 
-        Hand h;
+        Hand hnd;
         SortedSet<Hand> ranks = new TreeSet<>();
         List<int[]> combinations = SubHandGenerator.generate((all_cards.size()), 5);
 
@@ -166,33 +191,34 @@ public class Game2 {
             for (int i = 0; i < HAND_SIZE; ++i)
                 h5[i] = all_cards.get(cur[i]);
 
-            h = new Hand(h5, pl, 0);
+            hnd = new Hand(h5, pl, 0);
 
-            h.setHoleCards(
+            hnd.setHoleCards(
                     players.get(pl).hole_cards[0],
                     players.get(pl).hole_cards[1]);
 
             /** HAND EVALUATION */
-            h.rank = p.eval5card(h);
-            ranks.add(h);
+            hnd.rank = p.eval5card(hnd);
+            ranks.add(hnd);
 
         }
 
         // get the best hand for player for a round
-        h = ranks.first();
+        hnd = ranks.first();
 
-        return (h);
+        return (hnd);
     }
 
     /** advances to the next round of the game */
     public void nextRound() {
 
+        LOGGER.info(GameState.stateStr(gameState));
+
         switch (gameState) {
             case GameState.START:
-                deck.shuffle();
                 board.clear();
+                deck.shuffle();
                 dealCards();
-                printGame();
                 break;
             case GameState.PREFLOP:
                 break;
@@ -200,23 +226,63 @@ public class Game2 {
                 board.add(deck.getTopCard());
                 board.add(deck.getTopCard());
                 board.add(deck.getTopCard());
+                // printBoard();
                 break;
             case GameState.TURN:
             case GameState.RIVER:
                 board.add(deck.getTopCard());
+                // printBoard();
                 break;
             default:
-                System.out.println("game over");
-                break;
+                //System.out.println("game over\n\n");
+                restart();
+                return;
 
         }
-
-        evaluateCurrentState();
+        if (gameState == GameState.RIVER) {
+            FLogger.logln("\n\nRIVER");
+            printBoard();
+            round_hands = evaluateCurrentState();
+            if (round_hands != null) {
+                FLogger.logln("hands:");
+                for (Hand h : round_hands)
+                    FLogger.logln(h.toString());
+            }
+        }
         gameState++;
-
     }
 
-    private void printGame() {
+    /**
+     * restarts the game
+     */
+    private void restart() {
+
+        LOGGER.info("Restarting...");
+        init();
+    }
+
+    /**
+     * prints the board
+     */
+    private void printBoard() {
+        FLogger.logln("----Board----------");
+        for (Card c : board) {
+            FLogger.log(c + "\t");
+        }
+        FLogger.logln("\n-------------------\n");
+        // printDeck();
+        // System.out.println("\n-------------------\n");
+    }
+
+    public void printDeck() {
+        int idx = 0;
+        for (Card c : deck.deck_data) {
+            System.out.print(c + "\t");
+
+            if (++idx % 5 == 0)
+                System.out.println();
+
+        }
     }
 
 }

@@ -2,8 +2,8 @@ package com.mitek.poker.evaluator;
 
 public class Card {
 
-    protected int data;
-     
+    int data;
+
     /**
      * construct card from string
      * 

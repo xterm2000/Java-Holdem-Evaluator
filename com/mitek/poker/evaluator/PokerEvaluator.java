@@ -20,6 +20,17 @@ enum HandRank {
 
 };
 
+enum PocketRank {
+    GARBAGE,
+    PAIR,
+    ACE,
+    CONNECTOR,
+    SUITED,
+    SMALL,
+    MEDIUM,
+    PREMIUM
+};
+
 public class PokerEvaluator {
 
     private String hand_names[] = {
@@ -46,7 +57,7 @@ public class PokerEvaluator {
 
     public Map<Integer, Integer> flushes = new HashMap<>();
     public Map<Integer, Integer> lookup = new HashMap<>();
-
+    public Game2 p2g;
     private ArrayList<String> messages = new ArrayList<>();
     String label;
 
@@ -55,6 +66,49 @@ public class PokerEvaluator {
         this.label = s;
         LOGGER.log(Level.INFO, "Starting evaluator.\t" + this.label);
         init();
+    }
+
+    /**
+     * evaluate pocket cards
+     * 
+     * @param c1
+     * @param c2
+     * @return - evaluation of c1 and c2
+     */
+    public static String evalPocketPair(Card c1, Card c2) {
+
+        String res = "";
+
+        int v1 = (c1.data & 0xF00) >> 8;
+        int v2 = (c2.data & 0xF00) >> 8;
+
+        int ace = ((c1.data | c2.data) >> 16) & 0x1000;
+        int suited = c1.data & c2.data & 0xF000;
+        int pair = (c1.data & c2.data) >> 16;
+        int dist = Math.abs(v1 - v2);
+        // System.out.println(String.format("v1:%d v2:%d ace:%d suited:%d pair:%d
+        // dist%d",
+        // v1, v2, ace, suited, pair, dist));
+
+        if (dist >= 5 && suited == 0 && ace == 0 && Math.min(v1, v2) <= 6)
+            res += "garbage ";
+
+        if (suited != 0)
+            res += "suited ";
+        if ((ace != 0) && (v1 != v2))
+            res += "ace ";
+        else if (Math.min(v1, v2) >= 8)
+            res += "premium ";
+        if (pair != 0)
+            res += "pair";
+        if (pair == 0 && (dist < 5 || (ace != 0 && dist > 7))) {
+            if (ace == 0 && ((Math.min(v1, v2) < 5 && suited == 0) || (dist == 4)))
+                res += "garbage ";
+            res += "connector";
+        }
+
+        return res;
+
     }
 
     /** main evaluation function */
@@ -70,6 +124,7 @@ public class PokerEvaluator {
         // check for flush
         int flush = card01 & card02 & card03 & card04 & card05 & 0xF000;
         int unique_5 = (card01 | card02 | card03 | card04 | card05) >> 16;
+
         if (flush > 0)
             return flushes.get(unique_5);
 
@@ -141,7 +196,7 @@ public class PokerEvaluator {
 
     }
 
-    /** FLUSH  */
+    /** FLUSH */
     private void initFlushes() {
         flushes.clear();
         int temp = 0;
