@@ -65,11 +65,11 @@ public class HoldemGame {
     }
 
     public HoldemGame(int num_players) {
-        
+
         // init players
         players = new Player[num_players];
         for (int i = 0; i < num_players; ++i)
-            players[i] = new Player();
+            players[i] = new Player(null);
     }
 
     public void play(int num_of_rounds) {
@@ -109,8 +109,8 @@ public class HoldemGame {
 
     private void init() {
         deck.reset();
-        dealPlayer(0, "Ad", "Kd");
-        dealPlayer(1, "Ah", "Kh");
+        dealPlayer(0, "Ad", "8d");
+        dealPlayer(1, "Ah", "Ac");
         deck.shuffle();
     }
 
@@ -188,7 +188,7 @@ public class HoldemGame {
         // winning hand of the round
         winner_hand_hist.add(hand_stack.first());
         // after calculating subhands, we add the best hand to the list
-        hand_count[getHandCategory(hand_stack.first().rank)]++;
+        hand_count[(PokerEvaluator.hand_rank(hand_stack.first().rank).ordinal())]++;
 
     }
 
@@ -198,28 +198,6 @@ public class HoldemGame {
             log(evals.get(i));
 
         }
-    }
-
-    private int getHandCategory(int rank) {
-        if (rank > 6185)
-            return 8; // 1277 high card
-        if (rank > 3325)
-            return 7; // 2860 one pair
-        if (rank > 2467)
-            return 6; // 858 two pair
-        if (rank > 1609)
-            return 5; // 858 three-kind
-        if (rank > 1599)
-            return 4; // 10 straights
-        if (rank > 322)
-            return 3; // 1277 flushes
-        if (rank > 166)
-            return 2; // 156 full house
-        if (rank > 10)
-            return 1; // 156 four-kind
-        if (rank >= 0)
-            return 0; // 10 straight-flushes
-        return -1;
     }
 
     public void printHandHistory(boolean b) {

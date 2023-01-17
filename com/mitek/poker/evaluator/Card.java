@@ -1,29 +1,24 @@
 package com.mitek.poker.evaluator;
 
- 
-
 public class Card {
 
     protected int data;
-    protected int babajan;
-
+     
     /**
      * construct card from string
      * 
      * @param str - string in form of rank suit ( Ah / AH )
      */
     public Card(String str) {
-        if (str.length() != 2) {
-            
+        if (str == null || str.length() != 2) {
             this.data = 0;
             return;
         }
         str = str.toUpperCase();
         int r = Deck.ranks.indexOf(str.charAt(0));
-        
         int s = Deck.suits.indexOf(str.charAt(1));
         if (r < 0 || s < 0) {
-            
+
             this.data = 0;
             return;
         }
@@ -33,6 +28,10 @@ public class Card {
 
     public Card(int c) {
         this.data = c;
+    }
+
+    public Card() {
+        this.data = 0;
     }
 
     @Override
@@ -65,7 +64,7 @@ public class Card {
                 suit = 'C';
                 break;
             default:
-             
+
                 break;
         }
         return "" + rank + "" + suit;

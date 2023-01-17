@@ -141,6 +141,7 @@ public class PokerEvaluator {
 
     }
 
+    /** FLUSH  */
     private void initFlushes() {
         flushes.clear();
         int temp = 0;
