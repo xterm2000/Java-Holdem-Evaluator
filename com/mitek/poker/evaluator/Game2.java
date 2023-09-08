@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 public class Game2 {
     public static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
+    /** enum class */
     public static class GameState {
         public static final byte START = 0;
         public static final byte PREFLOP = 1;
@@ -47,10 +48,64 @@ public class Game2 {
         }
     };
 
+    /** generates subhands of 5 from 6,7 cards */
+    class SubHandGenerator {
+
+        /**
+         * generates subsets of 0,1,2,3,...,n of size r
+         * 
+         * @param n - size of the big set
+         * @param r - size of the subsets
+         * @return - List of int arrays (subsets)
+         */
+        public static List<int[]> generate(int n, int r) {
+
+            List<int[]> combinations = new ArrayList<>();
+            helper(combinations, new int[r], 0, n - 1, 0);
+            return combinations;
+        }
+
+        /** recursive helper */
+        private static void helper(
+                List<int[]> combinations,
+                int data[],
+                int start,
+                int end,
+                int index) {
+
+            if (index == data.length) {
+
+                int[] combination = data.clone();
+                combinations.add(combination);
+
+            } else if (start <= end) {
+
+                data[index] = start;
+                helper(combinations, data, start + 1, end, index + 1);
+                helper(combinations, data, start + 1, end, index);
+            }
+        }
+
+    }
+
     private static final boolean LOG = false;
     private static final int HAND_SIZE = 5;
 
     int game_count = 0;
+
+    public GameHistory historyController = new GameHistory(0);
+
+    public ArrayList<Hand> getRound_hands() {
+        return round_hands;
+    }
+
+    public ArrayList<Player> getPlayers() {
+        return players;
+    }
+
+    public ArrayList<Card> getBoard() {
+        return board;
+    }
 
     /** saves hands of all players in a round */
     ArrayList<Hand> round_hands = new ArrayList<>();
@@ -65,22 +120,24 @@ public class Game2 {
     private ArrayList<Hand> winner_hand_hist = new ArrayList<>();
 
     /* data structures */
-
-    private PokerEvaluator p = new PokerEvaluator("Game Evaluator (v0.1).");
-
+    /** the evaluator engine */
+    private PokerEvaluator evaluator = new PokerEvaluator("Game Evaluator (v0.1).");
+    /** playing deck */
     private Deck deck = new Deck();
-
+    /** structure that holds players data */
     private ArrayList<Player> players = new ArrayList<>();
 
-    // private Card[] board = new Card[5];
+    /** board */
     private ArrayList<Card> board = new ArrayList<>();
 
+    /** keeps the current state of the game (flop, turn etc.) */
     private byte gameState;
 
     public byte getGameState() {
         return gameState;
     }
 
+    /** returns game state as string */
     public String getGameStateStr() {
         return GameState.stateStr(gameState);
     }
@@ -92,6 +149,7 @@ public class Game2 {
 
     public Game2() {
         init();
+        evaluator.p2g = this;
     }
 
     /**
@@ -114,7 +172,7 @@ public class Game2 {
 
     /** inits the game */
     public void init() {
-        p.p2g = this;
+
         deck.reset();
         gameState = GameState.START;
         game_count++;
@@ -198,7 +256,7 @@ public class Game2 {
                     players.get(pl).hole_cards[1]);
 
             /** HAND EVALUATION */
-            hnd.rank = p.eval5card(hnd);
+            hnd.rank = evaluator.eval5card(hnd);
             ranks.add(hnd);
 
         }
@@ -226,28 +284,22 @@ public class Game2 {
                 board.add(deck.getTopCard());
                 board.add(deck.getTopCard());
                 board.add(deck.getTopCard());
-                // printBoard();
                 break;
             case GameState.TURN:
             case GameState.RIVER:
                 board.add(deck.getTopCard());
-                // printBoard();
                 break;
             default:
-                //System.out.println("game over\n\n");
                 restart();
                 return;
-
         }
-        if (gameState == GameState.RIVER) {
-            FLogger.logln("\n\nRIVER");
-            printBoard();
+
+        if (gameState == GameState.RIVER)
+            historyController.printBoard(board);
+
+        if (gameState >= GameState.FLOP) {
             round_hands = evaluateCurrentState();
-            if (round_hands != null) {
-                FLogger.logln("hands:");
-                for (Hand h : round_hands)
-                    FLogger.logln(h.toString());
-            }
+            historyController.saveGameState(gameState, players, board, round_hands);
         }
         gameState++;
     }
@@ -264,25 +316,21 @@ public class Game2 {
     /**
      * prints the board
      */
-    private void printBoard() {
-        FLogger.logln("----Board----------");
-        for (Card c : board) {
-            FLogger.log(c + "\t");
-        }
-        FLogger.logln("\n-------------------\n");
-        // printDeck();
-        // System.out.println("\n-------------------\n");
-    }
 
+    /** for debugging: prints the deck */
     public void printDeck() {
         int idx = 0;
         for (Card c : deck.deck_data) {
-            System.out.print(c + "\t");
+            log(c + "\t");
 
             if (++idx % 5 == 0)
-                System.out.println();
-
+                log("");
         }
+
+    }
+
+    public void saveGameState() {
+
     }
 
 }

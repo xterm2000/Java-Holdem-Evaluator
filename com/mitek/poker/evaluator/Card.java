@@ -1,6 +1,6 @@
 package com.mitek.poker.evaluator;
 
-public class Card {
+public class Card implements Comparable<Card> {
 
     int data;
 
@@ -23,21 +23,38 @@ public class Card {
             return;
         }
         this.data = 0 | 1 << (16 + r) | ((0x8000) >> s) | (r << 8) | PokerEvaluator.primes[r];
-        // System.out.println( this.toString() );
+
     }
 
     public Card(int c) {
         this.data = c;
     }
 
-    public Card() {
-        this.data = 0;
-    }
-
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         Card c = (Card) obj;
         return this.data == c.data;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(Card o) {
+
+        short v1 = (short) ((this.data & 0xF00) >> 8);
+        short v2 = (short) ((o.data & 0xF00) >> 8);
+        if (v1 < v2)
+            return -1;
+        else if (v1 > v2)
+            return 1;
+        else
+            return 0;
     }
 
     public Card(Card other) {

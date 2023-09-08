@@ -1,6 +1,5 @@
 package com.mitek.poker.evaluator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -20,7 +19,7 @@ enum HandRank {
 
 };
 
-enum PocketRank {
+enum PocketCardsRank {
     GARBAGE,
     PAIR,
     ACE,
@@ -33,7 +32,7 @@ enum PocketRank {
 
 public class PokerEvaluator {
 
-    private String hand_names[] = {
+    public static String hand_names[] = {
             "STRAIGHT_FLUSH",
             "FOUR_OF_A_KIND",
             "FULL_HOUSE",
@@ -56,9 +55,11 @@ public class PokerEvaluator {
             41 };
 
     public Map<Integer, Integer> flushes = new HashMap<>();
+
     public Map<Integer, Integer> lookup = new HashMap<>();
+
     public Game2 p2g;
-    private ArrayList<String> messages = new ArrayList<>();
+
     String label;
 
     public PokerEvaluator(String s) {
@@ -82,27 +83,32 @@ public class PokerEvaluator {
         int v1 = (c1.data & 0xF00) >> 8;
         int v2 = (c2.data & 0xF00) >> 8;
 
-        int ace = ((c1.data | c2.data) >> 16) & 0x1000;
-        int suited = c1.data & c2.data & 0xF000;
-        int pair = (c1.data & c2.data) >> 16;
-        int dist = Math.abs(v1 - v2);
-        // System.out.println(String.format("v1:%d v2:%d ace:%d suited:%d pair:%d
-        // dist%d",
-        // v1, v2, ace, suited, pair, dist));
+        int has_ace = ((c1.data | c2.data) >> 16) & 0x1000;
+        int is_suited = c1.data & c2.data & 0xF000;
+        int is_pair = (c1.data & c2.data) >> 16;
+        int rank_dist = Math.abs(v1 - v2);
 
-        if (dist >= 5 && suited == 0 && ace == 0 && Math.min(v1, v2) <= 6)
+        if (rank_dist >= 5 &&
+                is_suited == 0 &&
+                has_ace == 0 &&
+                Math.min(v1, v2) <= 6)
             res += "garbage ";
-
-        if (suited != 0)
+        if (is_suited != 0)
             res += "suited ";
-        if ((ace != 0) && (v1 != v2))
+        if (has_ace != 0 &&
+                is_pair != 0)
             res += "ace ";
         else if (Math.min(v1, v2) >= 8)
             res += "premium ";
-        if (pair != 0)
+        if (is_pair != 0)
             res += "pair";
-        if (pair == 0 && (dist < 5 || (ace != 0 && dist > 7))) {
-            if (ace == 0 && ((Math.min(v1, v2) < 5 && suited == 0) || (dist == 4)))
+        if (is_pair == 0 &&
+                (rank_dist < 5 ||
+                        (has_ace != 0 && rank_dist > 7))) {
+            if (has_ace == 0 &&
+                    ((Math.min(v1, v2) < 5 &&
+                            is_suited == 0) ||
+                            (rank_dist == 4)))
                 res += "garbage ";
             res += "connector";
         }
@@ -190,9 +196,10 @@ public class PokerEvaluator {
         long timeElapsed = finish - start;
 
         String msg = String.format("Finished init in %d(ms)", timeElapsed);
-        LOGGER.log(Level.INFO, msg);
+        LOGGER.info(msg);
 
         System.out.println(String.format("Lookup takes %d KB", Utils.getMemKBytes(lookup)));
+        System.out.println(String.format("Flushes takes %d KB", Utils.getMemKBytes(flushes)));
 
     }
 
@@ -326,7 +333,6 @@ public class PokerEvaluator {
 
         int hand_val = 2468;
         int temp = 0;
-        messages.clear();
 
         for (int i = 12; i >= 0; --i) {
             for (int j = i - 1; j >= 0; --j) {
@@ -339,13 +345,6 @@ public class PokerEvaluator {
                     int idxs[] = { i, i, j, j, k };
                     temp = getPrimesMult(idxs);
                     lookup.put(temp, hand_val++);
-
-                    String msg = String.format("Two pair: %c, %c and %c kicker",
-                            Deck.ranks.charAt(i),
-                            Deck.ranks.charAt(j),
-                            Deck.ranks.charAt(k));
-                    messages.add(msg);
-
                 }
             }
         }

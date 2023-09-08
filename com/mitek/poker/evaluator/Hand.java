@@ -1,5 +1,7 @@
 package com.mitek.poker.evaluator;
 
+import java.util.Arrays;
+
 public class Hand implements Comparable<Hand> {
     public int rank;
     public String handStr;
@@ -13,14 +15,16 @@ public class Hand implements Comparable<Hand> {
         this.hole_cards = new Card[2];
 
         handStr = "";
-
+        Arrays.sort(h);
         for (int i = 0; i < cards.length; ++i) {
             cards[i] = new Card(h[i]);
             handStr += h[i].toString() + " ";
         }
         this.player_number = pl;
-        this.cards = h;
+        
+        
         this.rank = rnk;
+        
     }
 
     public void setHoleCards(Card c1, Card c2) {
@@ -55,6 +59,8 @@ public class Hand implements Comparable<Hand> {
 
     @Override
     public boolean equals(Object obj) {
+        if (!(obj instanceof Hand))
+            return false;
         Hand c = (Hand) obj;
         return c.rank == this.rank;
     }
